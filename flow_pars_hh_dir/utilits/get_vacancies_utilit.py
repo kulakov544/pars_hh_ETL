@@ -4,7 +4,7 @@ from pandas import DataFrame
 import time
 from prefect import task
 
-from flow_pars_hh_dir.add_hash_to_df_utilit import add_hash_to_df
+from flow_pars_hh_dir.utilits.add_hash_to_df_utilit import add_hash_to_df
 
 
 @task(log_prints=True)
@@ -50,12 +50,13 @@ def get_vacancies(all_params: list) -> DataFrame:
                             v.get('salary')['from'] if v.get('salary') and v.get('salary')['from'] is not None else 0),
                         'salary_to': int(
                             v.get('salary')['to'] if v.get('salary') and v.get('salary')['to'] is not None else 0),
-                        'salary_currency': str(v.get('salary')["currency"] if v.get('salary') and v.get('salary')['currency'] is not None else ''),
+                        'salary_currency': str(v.get('salary')["currency"] if v.get('salary') and v.get('salary')[
+                            'currency'] is not None else ''),
                         'type': str(v.get('type')['name']),
                         'response_url': str(v.get('response_url')),
                         'sort_point_distance': str(v.get('sort_point_distance')),
                         'published_at': str(v.get('published_at')),
-                        'created_at': str(v.get('created_at')), # переделать
+                        'created_at': str(v.get('created_at')),
                         'archived': bool(v.get('archived')),
                         'apply_alternate_url': str(v.get('apply_alternate_url')),
                         'show_logo_in_search': bool(v.get('show_logo_in_search')),
@@ -100,8 +101,16 @@ def get_vacancies(all_params: list) -> DataFrame:
 
         time.sleep(3)  # Задержка между наборами параметров
 
+    # Удаление дубликатов
     all_vacancies_df.drop_duplicates(subset=['vacancy_id'], inplace=True)
 
+    # Конвертация даты
+    all_vacancies_df['published_at'] = pd.to_datetime(all_vacancies_df['published_at'], format='%Y-%m-%dT%H:%M:%S%z',
+                                                      errors='coerce')
+    all_vacancies_df['created_at'] = pd.to_datetime(all_vacancies_df['created_at'], format='%Y-%m-%dT%H:%M:%S%z',
+                                                    errors='coerce')
+
+    # Добавление хеша
     all_vacancies_df = add_hash_to_df(all_vacancies_df)
 
     return all_vacancies_df

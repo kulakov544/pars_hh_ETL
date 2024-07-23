@@ -7,8 +7,7 @@ if __name__ == "__main__":
     # Подготовка к деплою
     pars_hh = flow_pars_hh.to_deployment(name='flow_pars_hh_dir',
                                          #work_pool_name="default-agent-pool",
-                                         schedule=(CronSchedule(cron="0 */2 * * *",
-                                                                timezone="Europe/Moscow")),
+                                         schedule=(CronSchedule(cron="0 3 * * *", timezone="Europe/Moscow")),
                                          tags=["parser"],
                                          description="Парсинг данных с hh",
                                          version="1.0", )
