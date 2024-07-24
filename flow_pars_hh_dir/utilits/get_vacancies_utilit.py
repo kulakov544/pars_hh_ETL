@@ -63,7 +63,7 @@ def get_vacancies(all_params: list) -> DataFrame:
                         'url': str(v.get('url')),
                         'alternate_url': str(v.get('alternate_url')),
                         'employer_name': str(v.get('employer')["name"]),
-                        'employer_url': str(v.get('employer', {}).get("url", '')),
+                        'employer_url': str(v.get('employer', {}).get("alternate_url", '')),
                         'snippet_requirement': str(v.get('snippet')["requirement"]),
                         'snippet_responsibility': str(v.get('snippet')["responsibility"]),
                         'contacts': str(v.get('contacts')),
