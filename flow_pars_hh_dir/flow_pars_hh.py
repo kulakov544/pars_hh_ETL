@@ -58,17 +58,17 @@ def flow_pars_hh():
             'разработчик микросервисов',
             'инженер по поддержке пользователей'
         ]
+        specialization = [1, 2, 3, 4, 5]
 
         # Список параметров поиска
         search_params_list = []
 
-        text_search_length = len(text_search)
-
-        for i, city_id in enumerate(big_cities_ids):
-            search_text = text_search[i % text_search_length]
-            search_params_list.append(
-                {"text": search_text, "area": city_id, "per_page": 100, "page": 0}
-            )
+        for city_id in big_cities_ids:
+            for search_text in text_search:
+                for specializ in specialization:
+                    search_params_list.append(
+                        {"text": search_text, "area": city_id, "per_page": 100, "page": 0, 'specialization': specializ}
+                    )
 
         # Создание датафрейма
         print('Начало сбора вакансий')
