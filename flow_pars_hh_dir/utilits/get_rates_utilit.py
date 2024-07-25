@@ -33,7 +33,7 @@ def get_rates() -> DataFrame:
         date_published = pd.to_datetime(date_published, format='%d.%m.%Y').strftime('%Y-%m-%d')
 
         # Список валют для получения курса
-        target_currencies = {'USD', 'EUR'}
+        target_currencies = {'USD', 'EUR', 'AZN', 'BYR', 'GEL', 'KGS', 'KZT', 'UZS'}
 
         # Парсинг данных
         for child in root.findall('Valute'):
