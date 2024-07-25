@@ -100,9 +100,9 @@ def get_vacancies(all_params: list) -> DataFrame:
                 break
 
             params["page"] = params.get("page", 0) + 1
-            time.sleep(0.1)  # Задержка между страницами
+            time.sleep(0.01)  # Задержка между страницами
 
-        time.sleep(0.3)  # Задержка между наборами параметров
+        time.sleep(0.03)  # Задержка между наборами параметров
 
     # Удаление дубликатов
     all_vacancies_df.drop_duplicates(subset=['vacancy_id'], inplace=True)

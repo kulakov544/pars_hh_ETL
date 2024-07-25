@@ -1,8 +1,15 @@
 from prefect import flow
+import pandas as pd
 
 from flow_pars_hh_dir.utilits.update_core import update_core
 from flow_pars_hh_dir.utilits.connect_database import put_data
 from flow_pars_hh_dir.utilits.get_vacancies_utilit import get_vacancies
+
+
+def chunk_list(lst, chunk_size):
+    """Разбить список на подсписки фиксированного размера."""
+    for i in range(0, len(lst), chunk_size):
+        yield lst[i:i + chunk_size]
 
 
 @flow(name='pars_hh', log_prints=True)
@@ -100,29 +107,39 @@ def flow_pars_hh():
         # Создание датафрейма
         print('Начало сбора вакансий')
 
-        vacancies_df = get_vacancies(search_params_list)
-        print(f"Всего собрано {len(vacancies_df)} вакансий")
-    except Exception as e:
-        print(e)
-    else:
-        try:
-            # Название таблицы
-            table_name = "stage_pars_hh"
-            schema = "stage"
-
-            # Загрузка данных в stage
-            print('Загрузка данных в stage')
-            put_data(vacancies_df, table_name, schema, 'replace')
-        except Exception as e:
-            print(e)
-        else:
+        # Обработка параметров поиска пакетами по 500 штук
+        for search_params_chunk in chunk_list(search_params_list, 500):
             try:
-                # Обновление core
-                print("Перенос данных в core")
-                update_core()
+                vacancies_df = get_vacancies(search_params_chunk)
+                print(f"Собрано {len(vacancies_df)} вакансий в текущем пакете")
 
-                print(f"Собрано {len(vacancies_df)} вакансий и сохранено в базу данных")
+                if not vacancies_df.empty:
+                    try:
+                        # Название таблицы
+                        table_name = "stage_pars_hh"
+                        schema = "stage"
+
+                        # Загрузка данных в stage
+                        print('Загрузка данных в stage')
+                        put_data(vacancies_df, table_name, schema, 'replace')
+                    except Exception as e:
+                        print(f"Ошибка при загрузке данных в stage: {e}")
+                    else:
+                        try:
+                            # Обновление core
+                            print("Перенос данных в core")
+                            update_core()
+
+                            print(f"Собрано {len(vacancies_df)} вакансий и сохранено в базу данных")
+                        except Exception as e:
+                            print(f"Ошибка при обновлении core: {e}")
+                else:
+                    print("В текущем пакете нет вакансий")
+
             except Exception as e:
-                print(e)
-            else:
-                print('Скрипт завершен.')
+                print(f"Ошибка при сборе вакансий: {e}")
+
+    except Exception as e:
+        print(f"Ошибка в основном потоке: {e}")
+    else:
+        print('Скрипт завершен.')
