@@ -16,14 +16,17 @@ def get_vacancies(all_params: list) -> DataFrame:
     """
     url = "https://api.hh.ru/vacancies"
     all_vacancies_df = pd.DataFrame()
-
+    count_param = 0
     for params in all_params:
+        count_param += 1
+        print(f'Обработано наборов параметров: {count_param}/{len(all_params)}')
+        print(f"Собрано {len(all_vacancies_df)} вакансий")
         while True:
             try:
                 response = requests.get(url, params=params)
                 response.raise_for_status()  # Возбуждает исключение для ошибок HTTP
                 data = response.json()
-                print(f"Собрано {len(data.get("items", []))} вакансий")
+
             except requests.RequestException as e:
                 print(f"Ошибка запроса: {e}")
                 break
