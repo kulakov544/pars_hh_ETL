@@ -2,13 +2,12 @@ import pandas as pd
 import requests
 from pandas import DataFrame
 import time
-import json
+from prefect import task
 
-from utilits.logger_utilit import logger
-from utilits.add_hash_to_df_utilit import add_hash_to_df
+from flow_pars_hh_dir.utilits.add_hash_to_df_utilit import add_hash_to_df
 
 
-@logger.catch()
+@task(log_prints=True)
 def get_vacancies(all_params: list) -> DataFrame:
     """
     Функция получает JSON с данными о вакансиях.
@@ -17,30 +16,26 @@ def get_vacancies(all_params: list) -> DataFrame:
     """
     url = "https://api.hh.ru/vacancies"
     all_vacancies_df = pd.DataFrame()
-
+    count_param = 0
     for params in all_params:
+        count_param += 1
+        print(f'Обработано наборов параметров: {count_param}/{len(all_params)}')
+        print(f"Собрано {len(all_vacancies_df)} вакансий")
         while True:
             try:
                 response = requests.get(url, params=params)
                 response.raise_for_status()  # Возбуждает исключение для ошибок HTTP
-
-                # При необходимости можно сохранить ответ в файл и посмотреть какие данные должны быть включены в
-                # датафрейм
-                # filename = f"vacancies_response_{params.get('page', 0)}.json"
-                # with open(filename, 'w', encoding='utf-8') as f:
-                # json.dump(response.json(), f, ensure_ascii=False, indent=4)
-
                 data = response.json()
-                logger.info(f"Собрано {len(data.get("items", []))} вакансий")
+
             except requests.RequestException as e:
-                logger.error(f"Ошибка запроса: {e}")
+                print(f"Ошибка запроса: {e}")
                 break
             except ValueError as e:
-                logger.error(f"Ошибка декодирования JSON: {e}")
+                print(f"Ошибка декодирования JSON: {e}")
                 break
 
             if "items" not in data:
-                logger.warning("В ответе нет 'items'.")
+                print("В ответе нет 'items'.")
                 break
 
             vacancies_data = []
@@ -92,10 +87,10 @@ def get_vacancies(all_params: list) -> DataFrame:
                     }
                     vacancies_data.append(vacancy)
                 except Exception as e:
-                    logger.error(f"Ошибка обработки данных вакансии: {e}")
+                    print(f"Ошибка обработки данных вакансии: {e}")
 
             if not vacancies_data:
-                logger.warning("Нет данных о вакансиях для добавления.")
+                print("Нет данных о вакансиях для добавления.")
                 break
 
             vacancies_df = pd.DataFrame(vacancies_data)

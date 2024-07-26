@@ -1,21 +1,22 @@
 from prefect import flow
+import pandas as pd
 
 from flow_pars_hh_dir.utilits.update_core import update_core
 from flow_pars_hh_dir.utilits.connect_database import put_data
 from flow_pars_hh_dir.utilits.get_vacancies_utilit import get_vacancies
 
 
+def chunk_list(lst, chunk_size):
+    """Разбить список на подсписки фиксированного размера."""
+    for i in range(0, len(lst), chunk_size):
+        yield lst[i:i + chunk_size]
+
+
 @flow(name='pars_hh', log_prints=True)
 def flow_pars_hh():
     try:
         # ID больших городов России
-        big_cities_ids = [1, 2, 1202, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 14, 66, 88, 104, 78, 99, 76, 68, 54,
-                          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 72, 24, 53, 45, 34, 22, 29, 15, 67, 77, 90,
-                          91, 92, 93, 94, 95, 96, 97, 98, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
-                          113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131,
-                          132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150,
-                          151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 53,
-                          113, 112]
+        big_cities_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 113]
         text_search = [
             'python',
             'программист',
@@ -56,7 +57,40 @@ def flow_pars_hh():
             'it-аудитор',
             'инженер по devsecops',
             'разработчик микросервисов',
-            'инженер по поддержке пользователей'
+            'инженер по поддержке пользователей',
+            'DevOps',
+            'DevSecOps',
+            'android',
+            'application security',
+            'c#',
+            'cross platform',
+            'data endineer',
+            'data quality',
+            'data scientist',
+            'data аналитик',
+            'dba',
+            'dwh',
+            'etl',
+            'frontend',
+            'forensic',
+            'go',
+            'ios',
+            'java',
+            'machine learning',
+            'penetration testing',
+            'php',
+            'qa-менеджер',
+            'ruby',
+            'sql',
+            'sre',
+            'ручное тестирование',
+            'сетевой инженер',
+            'втоматизированное тестирование',
+            'архитектор ИБ',
+            'бизнес аналитик',
+            'бумажная безопасность',
+            'нагрузочное тестирование',
+            'системный аналитик'
         ]
         specialization = [1, 2, 3, 4, 5]
 
@@ -73,29 +107,39 @@ def flow_pars_hh():
         # Создание датафрейма
         print('Начало сбора вакансий')
 
-        vacancies_df = get_vacancies(search_params_list)
-        print(f"Всего собрано {len(vacancies_df)} вакансий")
-    except Exception as e:
-        print(e)
-    else:
-        try:
-            # Название таблицы
-            table_name = "stage_pars_hh"
-            schema = "stage"
-
-            # Загрузка данных в stage
-            print('Загрузка данных в stage')
-            put_data(vacancies_df, table_name, schema, 'replace')
-        except Exception as e:
-            print(e)
-        else:
+        # Обработка параметров поиска пакетами по 500 штук
+        for search_params_chunk in chunk_list(search_params_list, 500):
             try:
-                # Обновление core
-                print("Перенос данных в core")
-                update_core()
+                vacancies_df = get_vacancies(search_params_chunk)
+                print(f"Собрано {len(vacancies_df)} вакансий в текущем пакете")
 
-                print(f"Собрано {len(vacancies_df)} вакансий и сохранено в базу данных")
+                if not vacancies_df.empty:
+                    try:
+                        # Название таблицы
+                        table_name = "stage_pars_hh"
+                        schema = "stage"
+
+                        # Загрузка данных в stage
+                        print('Загрузка данных в stage')
+                        put_data(vacancies_df, table_name, schema, 'replace')
+                    except Exception as e:
+                        print(f"Ошибка при загрузке данных в stage: {e}")
+                    else:
+                        try:
+                            # Обновление core
+                            print("Перенос данных в core")
+                            update_core()
+
+                            print(f"Собрано {len(vacancies_df)} вакансий и сохранено в базу данных")
+                        except Exception as e:
+                            print(f"Ошибка при обновлении core: {e}")
+                else:
+                    print("В текущем пакете нет вакансий")
+
             except Exception as e:
-                print(e)
-            else:
-                print('Скрипт завершен.')
+                print(f"Ошибка при сборе вакансий: {e}")
+
+    except Exception as e:
+        print(f"Ошибка в основном потоке: {e}")
+    else:
+        print('Скрипт завершен.')
