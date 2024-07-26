@@ -2,12 +2,13 @@ import pandas as pd
 import requests
 from pandas import DataFrame
 import time
-from prefect import task
+import json
 
-from flow_pars_hh_dir.utilits.add_hash_to_df_utilit import add_hash_to_df
+from utilits.logger_utilit import logger
+from utilits.add_hash_to_df_utilit import add_hash_to_df
 
 
-@task(log_prints=True)
+@logger.catch()
 def get_vacancies(all_params: list) -> DataFrame:
     """
     Функция получает JSON с данными о вакансиях.
@@ -22,17 +23,24 @@ def get_vacancies(all_params: list) -> DataFrame:
             try:
                 response = requests.get(url, params=params)
                 response.raise_for_status()  # Возбуждает исключение для ошибок HTTP
+
+                # При необходимости можно сохранить ответ в файл и посмотреть какие данные должны быть включены в
+                # датафрейм
+                # filename = f"vacancies_response_{params.get('page', 0)}.json"
+                # with open(filename, 'w', encoding='utf-8') as f:
+                # json.dump(response.json(), f, ensure_ascii=False, indent=4)
+
                 data = response.json()
-                print(f"Собрано {len(data.get("items", []))} вакансий")
+                logger.info(f"Собрано {len(data.get("items", []))} вакансий")
             except requests.RequestException as e:
-                print(f"Ошибка запроса: {e}")
+                logger.error(f"Ошибка запроса: {e}")
                 break
             except ValueError as e:
-                print(f"Ошибка декодирования JSON: {e}")
+                logger.error(f"Ошибка декодирования JSON: {e}")
                 break
 
             if "items" not in data:
-                print("В ответе нет 'items'.")
+                logger.warning("В ответе нет 'items'.")
                 break
 
             vacancies_data = []
@@ -84,10 +92,10 @@ def get_vacancies(all_params: list) -> DataFrame:
                     }
                     vacancies_data.append(vacancy)
                 except Exception as e:
-                    print(f"Ошибка обработки данных вакансии: {e}")
+                    logger.error(f"Ошибка обработки данных вакансии: {e}")
 
             if not vacancies_data:
-                print("Нет данных о вакансиях для добавления.")
+                logger.warning("Нет данных о вакансиях для добавления.")
                 break
 
             vacancies_df = pd.DataFrame(vacancies_data)
