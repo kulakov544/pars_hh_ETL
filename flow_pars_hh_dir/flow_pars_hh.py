@@ -1,9 +1,10 @@
 from prefect import flow
 import pandas as pd
 
+from flow_pars_hh_dir.utilits.get_vacancies_id_utilit import get_vacancies_id
 from flow_pars_hh_dir.utilits.update_core import update_core
 from flow_pars_hh_dir.utilits.connect_database import put_data
-from flow_pars_hh_dir.utilits.get_vacancies_utilit import get_vacancies
+from flow_pars_hh_dir.utilits.get_vacancies_data_utilit import get_vacancies, get_vacancies_data
 
 
 def chunk_list(lst, chunk_size):
@@ -110,18 +111,27 @@ def flow_pars_hh():
         # Обработка параметров поиска пакетами по 500 штук
         for search_params_chunk in chunk_list(search_params_list, 500):
             try:
-                vacancies_df = get_vacancies(search_params_chunk)
-                print(f"Собрано {len(vacancies_df)} вакансий в текущем пакете")
+                print('Начало сбора id вакансий')
+                vacancies_id_df = get_vacancies_id(search_params_list)
+                print(f"Всего собрано {len(vacancies_id_df)} id вакансий")
 
-                if not vacancies_df.empty:
+                # Сбор данных по вакансиям
+                vacancies_data_df, vacancies_skill_df = get_vacancies_data(vacancies_id_df)
+                print(f"Собрано {len(vacancies_data_df)} вакансий в текущем пакете")
+
+                if not vacancies_data_df.empty:
                     try:
-                        # Название таблицы
-                        table_name = "stage_pars_hh"
-                        schema = "stage"
-
                         # Загрузка данных в stage
-                        print('Загрузка данных в stage')
-                        put_data(vacancies_df, table_name, schema, 'replace')
+                        # Название таблицы
+                        table_name_data = "stage_pars_hh"
+                        schema = "stage"
+                        print('Загрузка данных в stage.')
+                        put_data(vacancies_data_df, table_name_data, schema, 'replace')
+
+                        # Название таблицы
+                        table_name_skill = "stage_pars_hh_skill"
+                        schema = "stage"
+                        put_data(vacancies_skill_df, table_name_skill, schema, 'replace')
                     except Exception as e:
                         print(f"Ошибка при загрузке данных в stage: {e}")
                     else:
@@ -130,7 +140,7 @@ def flow_pars_hh():
                             print("Перенос данных в core")
                             update_core()
 
-                            print(f"Собрано {len(vacancies_df)} вакансий и сохранено в базу данных")
+                            print(f"Собрано {len(vacancies_data_df)} вакансий и сохранено в базу данных")
                         except Exception as e:
                             print(f"Ошибка при обновлении core: {e}")
                 else:
