@@ -1,10 +1,9 @@
 from prefect import flow
-import pandas as pd
 
 from flow_pars_hh_dir.utilits.get_vacancies_id_utilit import get_vacancies_id
 from flow_pars_hh_dir.utilits.update_core import update_core
 from flow_pars_hh_dir.utilits.connect_database import put_data
-from flow_pars_hh_dir.utilits.get_vacancies_data_utilit import get_vacancies, get_vacancies_data
+from flow_pars_hh_dir.utilits.get_vacancies_data_utilit import get_vacancies_data
 
 
 def chunk_list(lst, chunk_size):
@@ -106,17 +105,15 @@ def flow_pars_hh():
                     )
 
         # Создание датафрейма
-        print('Начало сбора вакансий')
+        try:
+            print('Начало сбора id вакансий')
+            vacancies_id_df = get_vacancies_id(search_params_list)
+            print(f"Всего собрано {len(vacancies_id_df)} id вакансий")
 
-        # Обработка параметров поиска пакетами по 500 штук
-        for search_params_chunk in chunk_list(search_params_list, 500):
-            try:
-                print('Начало сбора id вакансий')
-                vacancies_id_df = get_vacancies_id(search_params_list)
-                print(f"Всего собрано {len(vacancies_id_df)} id вакансий")
-
+            # Обработка id вакансий пакетами по 500 штук
+            for search_params_chunk in chunk_list(search_params_list, 500):
                 # Сбор данных по вакансиям
-                vacancies_data_df, vacancies_skill_df = get_vacancies_data(vacancies_id_df)
+                vacancies_data_df, vacancies_skill_df = get_vacancies_data(search_params_chunk)
                 print(f"Собрано {len(vacancies_data_df)} вакансий в текущем пакете")
 
                 if not vacancies_data_df.empty:
@@ -146,8 +143,8 @@ def flow_pars_hh():
                 else:
                     print("В текущем пакете нет вакансий")
 
-            except Exception as e:
-                print(f"Ошибка при сборе вакансий: {e}")
+        except Exception as e:
+            print(f"Ошибка при сборе вакансий: {e}")
 
     except Exception as e:
         print(f"Ошибка в основном потоке: {e}")
