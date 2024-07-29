@@ -1,6 +1,6 @@
 import pandas as pd
 
-from utilits.connect_database import execute_stmt, put_data, get_data
+from flow_pars_hh_dir.utilits.connect_database import execute_stmt, put_data, get_data
 
 
 def update_core():

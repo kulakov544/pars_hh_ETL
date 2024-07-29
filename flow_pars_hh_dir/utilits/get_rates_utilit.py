@@ -3,8 +3,7 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 from pandas import DataFrame
 
-from utilits.connect_database import get_data, put_data
-from utilits.logger_utilit import logger
+from flow_pars_hh_dir.utilits.connect_database import get_data, put_data
 import time
 
 # URL для получения курсов валют
@@ -63,11 +62,11 @@ def get_rates_cb(max_retries=10, wait_time=10) -> DataFrame:
             return df_rates
 
         except requests.RequestException as e:
-            logger.error("Ошибка при запросе данных: {}. Попытка {}/{}", e, attempt + 1, max_retries)
+            print("Ошибка при запросе данных: {}. Попытка {}/{}", e, attempt + 1, max_retries)
         except ET.ParseError as e:
-            logger.error("Ошибка при парсинге XML: {}. Попытка {}/{}", e, attempt + 1, max_retries)
+            print("Ошибка при парсинге XML: {}. Попытка {}/{}", e, attempt + 1, max_retries)
         except Exception as e:
-            logger.error("Произошла ошибка: {}. Попытка {}/{}", e, attempt + 1, max_retries)
+            print("Произошла ошибка: {}. Попытка {}/{}", e, attempt + 1, max_retries)
 
         attempt += 1
         time.sleep(wait_time)

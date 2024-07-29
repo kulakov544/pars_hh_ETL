@@ -6,8 +6,8 @@ from pandas import DataFrame
 from datetime import datetime
 import numpy as np
 
-from utilits.add_hash_to_df_utilit import add_hash_to_df
-from config import access_token
+from flow_pars_hh_dir.utilits.add_hash_to_df_utilit import add_hash_to_df
+from flow_pars_hh_dir.config import access_token
 
 
 def get_vacancy_details(vacancy_id: str) -> json:
