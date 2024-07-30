@@ -96,6 +96,7 @@ def flow_pars_hh():
 
         # Список параметров поиска
         search_params_list = []
+        uniq_id = set()
 
         for city_id in big_cities_ids:
             for search_text in text_search:
@@ -105,15 +106,15 @@ def flow_pars_hh():
                     )
 
         # Создание датафрейма
-        try:
-            print('Начало сбора id вакансий')
-            vacancies_id_df = get_vacancies_id(search_params_list)
-            print(f"Всего собрано {len(vacancies_id_df)} id вакансий")
+        # Обработка id вакансий пакетами по 100 штук
+        for search_params_chunk in chunk_list(search_params_list, 100):
+            try:
+                print('Начало сбора id вакансий')
+                vacancies_id_df = get_vacancies_id(search_params_chunk, uniq_id)
+                print(f"Всего собрано {len(vacancies_id_df)} id вакансий")
 
-            # Обработка id вакансий пакетами по 500 штук
-            for search_params_chunk in chunk_list(search_params_list, 500):
                 # Сбор данных по вакансиям
-                vacancies_data_df, vacancies_skill_df = get_vacancies_data(search_params_chunk)
+                vacancies_data_df, vacancies_skill_df = get_vacancies_data(vacancies_id_df)
                 print(f"Собрано {len(vacancies_data_df)} вакансий в текущем пакете")
 
                 if not vacancies_data_df.empty:
@@ -143,8 +144,8 @@ def flow_pars_hh():
                 else:
                     print("В текущем пакете нет вакансий")
 
-        except Exception as e:
-            print(f"Ошибка при сборе вакансий: {e}")
+            except Exception as e:
+                print(f"Ошибка при сборе вакансий: {e}")
 
     except Exception as e:
         print(f"Ошибка в основном потоке: {e}")
