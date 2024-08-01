@@ -1,8 +1,9 @@
-import pandas as pd
+from prefect import task
 
-from flow_pars_hh_dir.utilits.connect_database import execute_stmt, put_data, get_data
+from flow_pars_hh_dir.utilits.connect_database import execute_stmt
 
 
+@task
 def update_core():
     # Обновление столбца статуса
     sqlt_stmt = "select core.add_status();"

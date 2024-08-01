@@ -2,14 +2,17 @@ import requests
 import pandas as pd
 import xml.etree.ElementTree as ET
 from pandas import DataFrame
+from prefect import task
+import time
 
 from flow_pars_hh_dir.utilits.connect_database import get_data, put_data
-import time
+
 
 # URL для получения курсов валют
 url = 'https://www.cbr.ru/scripts/XML_daily.asp'
 
 
+@task
 def get_rates_cb(max_retries=10, wait_time=10) -> DataFrame:
     """Функция получает курсы валют с сайта ЦБ.
     :param max_retries: Максимальное количество попыток запроса
@@ -92,5 +95,3 @@ def get_and_put_rates():
     if not result_rates.empty:
         put_data(result_rates, table_name='rates', schema='core', if_exists='append')
 
-
-get_and_put_rates()
