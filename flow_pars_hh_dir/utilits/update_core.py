@@ -17,7 +17,7 @@ def update_core():
     sqlt_stmt = "SELECT core.add_fact_vacancy_0();"
     execute_stmt(sqlt_stmt)
 
-    # Перенос записей в историю
+    # Перенос записей в историю и удаление перенесенных вакансий
     sqlt_stmt = "SELECT core.update_fact_history();"
     execute_stmt(sqlt_stmt)
 
@@ -25,8 +25,8 @@ def update_core():
     sqlt_stmt = "SELECT core.add_fact_vacancy_2();"
     execute_stmt(sqlt_stmt)
 
-    # Обновление записей
-    sqlt_stmt = "select core.add_skill();"
+    # Обновление таблицы мапинга скилы-вакансии
+    sqlt_stmt = "select core.add_skill_vacancy_map();"
     execute_stmt(sqlt_stmt)
 
 
