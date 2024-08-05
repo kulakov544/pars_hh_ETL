@@ -63,7 +63,4 @@ def get_vacancies_id(all_params: list, uniq_id: set) -> DataFrame:
 
         time.sleep(0.3)  # Задержка между наборами параметров
 
-    # Удаление дубликатов
-    all_vacancies_id_df.drop_duplicates(subset=['vacancy_id'], inplace=True)
-
     return all_vacancies_id_df

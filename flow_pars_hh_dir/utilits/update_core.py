@@ -1,5 +1,3 @@
-import pandas as pd
-
 from flow_pars_hh_dir.utilits.connect_database import execute_stmt, put_data, get_data
 
 
