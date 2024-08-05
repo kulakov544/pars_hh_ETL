@@ -2,9 +2,10 @@ import pandas as pd
 import requests
 from pandas import DataFrame
 import time
-import random
+from prefect import task
 
 
+@task
 def get_vacancies_id(all_params: list, uniq_id: set) -> DataFrame:
     """
     Функция составляет список id вакансий.

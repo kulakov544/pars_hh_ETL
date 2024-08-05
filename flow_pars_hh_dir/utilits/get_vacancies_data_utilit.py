@@ -5,6 +5,7 @@ import time
 from pandas import DataFrame
 from datetime import datetime
 import numpy as np
+from prefect import task
 
 from flow_pars_hh_dir.utilits.add_hash_to_df_utilit import add_hash_to_df
 from flow_pars_hh_dir.config import access_token
@@ -35,6 +36,7 @@ def get_vacancy_details(vacancy_id: str) -> json:
         return None
     return response.json()
 
+@task
 def get_vacancies_data(vacancies_id: DataFrame):
     """
     Функция Формирует датафрейм с данными о вакансии
