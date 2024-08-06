@@ -21,12 +21,8 @@
 ### План реализации
 Схема работы программы:
 ![Схема работы программы](flow_pars_hh_dir/file/DWH.png)
-Таблицы слоя Stage и схема работы:
-![Схема работы программы](flow_pars_hh_dir/file/stage.png)
-Таблицы слоя Core и схема переноса данных:
-![Схема работы программы](flow_pars_hh_dir/file/core.png)
-Представление в слое Data Mart:
-![Схема работы программы](flow_pars_hh_dir/file/data_mart.png)
+Подробную схему DWH можно посмотреть в соответствующем проекте:  
+https://github.com/kulakov544/pars_hh_DWH.git
 
 ### Работа программы:
 1. Создание списка наборов параметров search_params_list.

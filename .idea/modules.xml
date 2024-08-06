@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/prefect_dev.iml" filepath="$PROJECT_DIR$/.idea/prefect_dev.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pars_hh_ETL.iml" filepath="$PROJECT_DIR$/.idea/pars_hh_ETL.iml" />
     </modules>
   </component>
 </project>
